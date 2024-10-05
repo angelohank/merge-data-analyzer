@@ -17,3 +17,13 @@ arquivo de configuração
   }
 }
 ```
+Arquivo de configuração do banco de dados
+```
+{
+  "database_name": "",
+  "user":  "",
+  "password": "",
+  "host":  "",
+  "port": ""
+}
+```
