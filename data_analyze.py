@@ -3,6 +3,8 @@ import repository
 import logger
 from datetime import datetime, timedelta
 
+MERGE_ENDPOINT = 'merge_requests'
+PIPELINE_ENDPOINT = 'pipelines'
 def get_data(config):
     search_params = config['data']
 
@@ -12,7 +14,7 @@ def get_data(config):
     per_page = search_params['perPage']
     state = search_params['state']
 
-    url = f"{api_url}/projects/{project_id}/merge_requests"
+    url = f"{api_url}/projects/{project_id}/{MERGE_ENDPOINT}"
     header = {"PRIVATE-TOKEN": private_token}
 
     params = {
@@ -20,12 +22,12 @@ def get_data(config):
         "state": state
     }
 
-    logger.log(f"Buscando merges [DT_BUSCA] {(datetime.now()).isoformat()}")
+    logger.log(f"get_data - Buscando merges [DT_BUSCA] {(datetime.now()).isoformat()}")
 
     response = requests.get(url, params=params, headers=header)
 
     if response.status_code != 200:
-        logger.log(f"Error ao buscar merges [STATUS CODE] {str(response.status_code)}")
+        logger.log(f"get_data - Error ao buscar merges [STATUS CODE] {str(response.status_code)}")
         return
 
     data = response.json()
@@ -42,10 +44,10 @@ def get_data(config):
     for merge in get_merges_by_general_branchs(search_params['generalBranchs'], valid_merges):
         filtered_merges.append(merge)
 
-    print(filtered_merges)
     merge_dto_list = []
 
     merges_mapped = repository.get_id_merges()
+    pipelines_mapped = repository.get_id_pipelines()
 
     for merge in filtered_merges:
         merge_dto = {
@@ -54,13 +56,55 @@ def get_data(config):
             "squad": get_team(merge['source_branch']),
             "dt_abertura": merge['created_at'],
             "web_url": merge['web_url'],
-            "sha": merge['sha']
+            "sha": merge['sha'],
+            "pipeline": get_pipeline_by_merge_sha(merge, config)
         }
 
         if merge_dto['id'] not in merges_mapped:
             merge_dto_list.append(merge_dto)
 
+    pipeline_list = []
+    for merge in merge_dto_list:
+        if( not merge['pipeline'][0]['id_pipeline'] in pipelines_mapped):
+            pipeline_list.append(merge['pipeline'][0])
+
     repository.inserir_merge(merge_dto_list)
+    repository.inserir_pipeline(pipeline_list)
+
+def get_pipeline_by_merge_sha(merge, config):
+
+    sha = merge['sha']
+    data = config['data']
+    private_token = data['privateToken']
+    api_url = data['apiUrl']
+    project_id = data['projectId']
+
+    url = f"{api_url}/projects/{project_id}/{PIPELINE_ENDPOINT}"
+    header = {"PRIVATE-TOKEN": private_token}
+    params = {
+        "sha": sha
+    }
+
+    logger.log("get_pipeline_by_merge_sha [SHA]" + sha)
+    response = requests.get(url, params=params, headers=header)
+    data = response.json()
+
+    model_list = []
+
+    for pipeline in data:
+        pipeline_model = {
+            "id_pipeline": pipeline['id'],
+            "iid": pipeline['iid'],
+            "sha": pipeline['sha'],
+            "status": pipeline['status'],
+            "link": pipeline['web_url'],
+            "id_merge": merge['iid']
+        }
+
+        model_list.append(pipeline_model)
+
+    return model_list
+
 
 def filtered_merges_by_author(config, data):
     filtered_merges = []
