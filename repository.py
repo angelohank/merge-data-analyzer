@@ -37,8 +37,8 @@ def inserir_merge(merge_list):
 
         #TODO inserir conjunto atual
         insert_query = """
-        INSERT INTO merges (id_merge, autor, squad, dt_abertura, size_conjunto_atual, link)
-        VALUES (%s, %s, %s, %s, 0, %s)
+        INSERT INTO merges (id_merge, autor, squad, dt_abertura, size_conjunto_atual, link, sha)
+        VALUES (%s, %s, %s, %s, 0, %s, %s)
         """
 
         for merge in merge_list:

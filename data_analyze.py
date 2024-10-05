@@ -53,7 +53,8 @@ def get_data(config):
             "autor": merge['author']['username'],
             "squad": get_team(merge['source_branch']),
             "dt_abertura": merge['created_at'],
-            "web_url": merge['web_url']
+            "web_url": merge['web_url'],
+            "sha": merge['sha']
         }
 
         if merge_dto['id'] not in merges_mapped:
