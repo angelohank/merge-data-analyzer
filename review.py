@@ -8,7 +8,7 @@ app = Flask(__name__)
 def list_merges():
     conn = repository.connection_db()
     cur = conn.cursor()
-    cur.execute("SELECT id_merge, link, fgrevisado FROM merges WHERE fgrevisado = 'F'")
+    cur.execute("select  m.id_merge, m.link, fgrevisado from merges m left join pipelines p on m.id_merge = p.id_merge where p.status = 'failed'")
     merges = cur.fetchall()
     cur.close()
     conn.close()
