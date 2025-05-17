@@ -28,7 +28,7 @@ A ideia do artigo foi encontrar padrões de uso e crescimento para um determinad
 
 ### Configurações
 #### Requerimentos
-- Python 3
+- Python 3.10
 - private_token da plataforma de código
 - url do servidor de hospedagem
 
