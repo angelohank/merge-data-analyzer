@@ -1,4 +1,3 @@
---TODO deixar a estrutura do banco bonitinha, do modelo final
 alter table pipelines drop column if exists iid;
 alter table pipelines add column iid INTEGER;
 
